@@ -80,11 +80,11 @@ def main(argv):
     try:
         opts, args = getopt.getopt(argv, "hd:", ["directory="])
     except getopt.GetoptError:
-        print('BackupDrafts -p <directory_path>')
+        print('python BackupDrafts.py -p <directory_path>')
         sys.exit(2)
     for opt, arg in opts:
         if opt == '-h':
-            print('USAGE: BackupDrafts -p <directory_path>')
+            print('USAGE: python BackupDrafts.py -p <directory_path>')
             print('-------------------------------------------------------------------------------')
             print('recursively crawl a given directory')
             print('back up any documents containing the following keywords in their file name:')
@@ -92,12 +92,16 @@ def main(argv):
             sys.exit()
         elif opt in ("-d", "--directory"):
             dir_path = arg
+        else:
+            print('bad arguments passed. Use "python BackupDrafts.py -h" for help.')
+            sys.exit()
 
     if os.path.isdir(dir_path):
         print('backing up files in "{}" '.format(dir_path))
         backup_all(dir_path)
     else:
         print('Bad directory path: no backup performed')
+        sys.exit(2)
 
 if __name__ == "__main__":
     main(sys.argv[1:])
