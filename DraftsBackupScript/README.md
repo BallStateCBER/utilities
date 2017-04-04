@@ -12,7 +12,7 @@ Brandon Patterson
 
 ## USAGE:
 - In a command prompt
-- type `BackupDrafts -p <directory_path>` and executes
+- type `python BackupDrafts.py -p <directory_path>` and executes
 
 #### (OR)
 - Make sure  `Run_Backup.bat` is in the same directory as `BackupDrafts.py`
@@ -25,7 +25,7 @@ To automatically run this script periodically:
 - Open the Windows Task Scheduler,
 - schedule the `run_backup.bat` file run as often as you desire. (weekly or bi-weekly is suggested)
 
-## CHANGE SCRIPT BEHAVIOR:
+## CHANGING SCRIPT BEHAVIOR:
 - Open `BackupDrafts.py` for editing.
 - Near the top, you should see some constant lists:
   - `BACKUP_KEYWORDS`: A case-insensitive list of all keywords to be considered for backup (draft, prelim, etc)
