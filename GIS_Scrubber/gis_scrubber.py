@@ -60,7 +60,7 @@ def scrub_csv(dir_dirty, infile_name, dir_clean):
     outfile_name = scrub_string(infile_name.split('.')[0]) + '.' + infile_name.split('.')[-1]
     outfile = r'{}\{}'.format(dir_clean, outfile_name)
 
-    print(r'Scrubbing {}:'.format(infile))
+    print(r'Scrubbing "{}":'.format(infile))
     filename_errors = infile_name == outfile_name
     header_errors = False
 
@@ -82,14 +82,12 @@ def scrub_csv(dir_dirty, infile_name, dir_clean):
             writer.writerow(row)
 
     if filename_errors:
-        print("\tFilename errors found and corrected.")
-    else:
-        print("\tNo file naming errors found")
+        print("\tFILENAME ERRORS FOUND AND CORRECTED.")
 
     if header_errors:
-        print("\tHeader errors found and corrected.")
-    else:
-        print("\tNo header errors found.")
+        print("\tHEADER ERRORS FOUND AND CORRECTED.")
+
+    print('\tNew file located at "{}\\{}"\n'.format(dir_clean, outfile_name))
 
 
 def scrub_file(dir_dirty, filename, dir_clean):
@@ -111,6 +109,9 @@ def scrub_file(dir_dirty, filename, dir_clean):
         #     scrub_xls(dir_dirty, filename, dir_clean)
         # if scrub_method == 'xlsx':
         #     scrub_xlsx(dir_dirty, filename, dir_clean)
+    elif filename != '_empty':  # Don't give warnings for the filler file
+        print(r'WARNING: DID NOT SCRUB "{}\{}"!'.format(dir_dirty, filename))
+        print('\tREASON: FILE TYPE NOT SUPPORTED\n')
 
 
 def scrub_directory(dir_dirty, dir_clean):
