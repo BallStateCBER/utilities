@@ -27,24 +27,27 @@ TARGET_EXTENSIONS = {'txt': 'csv'
                      }
 
 
+def scrub_string(dirty_str):
+    # no special characters
+    clean_str = re.sub(r'[^a-zA-Z0-9_]', '_', dirty_str)
+
+    # no leading underscores
+    clean_str = re.sub(r'^_*', '', clean_str)
+
+    # limit header lengths
+    if len(clean_str) > MAX_FLD_LEN:
+        clean_str = clean_str[:MAX_FLD_LEN - END_CHR_CNT - 1] + '_' + clean_str[-END_CHR_CNT:]
+
+    return clean_str
+
+
 def scrub_header(header_list):
     """
     Given a header as a listlist, scrub its string contents, and return the scrubbed list
     """
     scrubbed_header = []
     for entry in header_list:
-        # no special characters
-        new_entry = re.sub(r'[^a-zA-Z0-9_]', '_', entry)
-
-        # no leading underscores
-        new_entry = re.sub(r'^_*', '', new_entry)
-
-        # limit header lengths
-        if len(new_entry) > MAX_FLD_LEN:
-            new_entry = new_entry[:MAX_FLD_LEN - END_CHR_CNT - 1] + '_' + new_entry[-END_CHR_CNT:]
-
-        # add scrubbed entry to the list
-        scrubbed_header.append(new_entry)
+        scrubbed_header.append(scrub_string(entry))
     return scrubbed_header
 
 
