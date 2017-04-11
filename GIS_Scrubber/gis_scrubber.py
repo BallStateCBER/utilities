@@ -11,6 +11,7 @@ import os
 import sys
 import getopt
 import csv
+# import xlrd
 import re
 
 MAX_FLD_LEN = 16
@@ -51,13 +52,16 @@ def scrub_header(header_list):
     return scrubbed_header
 
 
-def scrub_csv(dir_dirty, filename, dir_clean):
+def scrub_csv(dir_dirty, infile_name, dir_clean):
     """ Scrubs a CSV-formatted file """
 
-    infile = r'{}\{}'.format(dir_dirty, filename)
-    outfile = r'{}\{}'.format(dir_clean, filename)
-    print(r'Scrubbing {}:'.format(infile))
 
+    infile = r'{}\{}'.format(dir_dirty, infile_name)
+    outfile_name = scrub_string(infile_name.split('.')[0]) + '.' + infile_name.split('.')[-1]
+    outfile = r'{}\{}'.format(dir_clean, outfile_name)
+
+    print(r'Scrubbing {}:'.format(infile))
+    filename_errors = infile_name == outfile_name
     header_errors = False
 
     with open(infile) as d_file, open(outfile, 'w', newline='\n') as c_file:
@@ -66,18 +70,24 @@ def scrub_csv(dir_dirty, filename, dir_clean):
         reader = csv.reader(d_file, dialect)
         writer = csv.writer(c_file, dialect)
 
+        # Process the header
         header = next(reader)
         scrubbed_header = scrub_header(header)
         if scrubbed_header != header:
             header_errors = True
         writer.writerow(scrubbed_header)
 
+        # write the remaining data to the file verbatim
         for row in reader:
-            # TODO: are there any restrictions on DATA characters/length?
             writer.writerow(row)
 
+    if filename_errors:
+        print("\tFilename errors found and corrected.")
+    else:
+        print("\tNo file naming errors found")
+
     if header_errors:
-        print("\tHeader errors found and fixed.")
+        print("\tHeader errors found and corrected.")
     else:
         print("\tNo header errors found.")
 
