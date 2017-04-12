@@ -11,7 +11,7 @@ import os
 import sys
 import getopt
 import csv
-# import xlrd
+import openpyxl
 import re
 
 MAX_FLD_LEN = 16
@@ -23,28 +23,43 @@ DEFAULT_CLEAN = 'clean'
 TARGET_EXTENSIONS = {'txt': 'csv'
                      ,'csv': 'csv'
                      ,'tsv': 'csv'
-                     # ,'xls': 'xls'
-                     # ,'xlsx': 'xlsx'
+                     ,'xlsx': 'xlsx'
                      }
 
 
 def scrub_string(dirty_str):
+    """
+    Given a string, clean it up to match GIS conventions
+    """
     # no special characters
     clean_str = re.sub(r'[^a-zA-Z0-9_]', '_', dirty_str)
 
-    # no leading underscores
+    # move leading numbers to the end
+    matches = re.match(r'[\d_]+', clean_str)
+    if matches is not None:
+        leading_nums = matches.group()
+        clean_str = clean_str[len(leading_nums):] + '_' + leading_nums
+
+    # remove double-underscores
+    clean_str = re.sub(r'_+', '_', clean_str)
+
+    # no leading or trailing underscores
     clean_str = re.sub(r'^_*', '', clean_str)
+    clean_str = re.sub(r'_+$', '', clean_str)
 
     # limit header lengths
     if len(clean_str) > MAX_FLD_LEN:
         clean_str = clean_str[:MAX_FLD_LEN - END_CHR_CNT - 1] + '_' + clean_str[-END_CHR_CNT:]
 
+    # remove double-underscores (again)
+    clean_str = re.sub(r'_+', '_', clean_str)
+
     return clean_str
 
 
-def scrub_header(header_list):
+def scrub_headers(header_list):
     """
-    Given a header as a listlist, scrub its string contents, and return the scrubbed list
+    Given list of header strings, scrub its string contents, and return the scrubbed list
     """
     scrubbed_header = []
     for entry in header_list:
@@ -52,19 +67,58 @@ def scrub_header(header_list):
     return scrubbed_header
 
 
+def scrub_xlsx(dir_dirty, infile_name, dir_clean):
+    """
+    Scrub an Excel file
+    """
+    infile_path = r"{}\{}".format(dir_dirty, infile_name)
+    outfile_path = r"{}\{}".format(dir_clean, infile_name)
+
+    print(r'Scrubbing "{}":'.format(infile_path))
+
+
+    wb = openpyxl.load_workbook(infile_path)
+    for sheet in wb:
+        print('\t Scrubbing Sheet: {}'.format(sheet.title))
+
+        sheet_name_errors = False
+        scrubbed_title = scrub_string(sheet.title)
+        if scrubbed_title != sheet.title:
+            sheet_name_errors = True
+            sheet.title = scrubbed_title
+
+        header_errors = False
+        for cell in sheet.rows[0]:
+            scrubbed_value = scrub_string(cell.value)
+            if scrubbed_value != cell.value:
+                header_errors = True
+                cell.value = scrubbed_value
+
+        if sheet_name_errors:
+            print("\t\tSHEET NAME ERRORS FOUND AND CORRECTED.")
+
+        if header_errors:
+            print("\t\tHEADER ERRORS FOUND AND CORRECTED.")
+
+
+    wb.save(outfile_path)
+    print('\tNew file located at "{}\\{}"\n'.format(dir_clean, outfile_path))
+
+
 def scrub_csv(dir_dirty, infile_name, dir_clean):
-    """ Scrubs a CSV-formatted file """
+    """
+    Scrubs a CSV-formatted file
+    """
 
+    infile_path = r'{}\{}'.format(dir_dirty, infile_name)
+    outfile_path = scrub_string(infile_name.split('.')[0]) + '.' + infile_name.split('.')[-1]
+    outfile = r'{}\{}'.format(dir_clean, outfile_path)
 
-    infile = r'{}\{}'.format(dir_dirty, infile_name)
-    outfile_name = scrub_string(infile_name.split('.')[0]) + '.' + infile_name.split('.')[-1]
-    outfile = r'{}\{}'.format(dir_clean, outfile_name)
-
-    print(r'Scrubbing "{}":'.format(infile))
-    filename_errors = infile_name == outfile_name
+    print(r'Scrubbing "{}":'.format(infile_path))
+    filename_errors = infile_name == outfile_path
     header_errors = False
 
-    with open(infile) as d_file, open(outfile, 'w', newline='\n') as c_file:
+    with open(infile_path) as d_file, open(outfile, 'w', newline='\n') as c_file:
         dialect = csv.Sniffer().sniff(d_file.read(1024))
         d_file.seek(0)
         reader = csv.reader(d_file, dialect)
@@ -72,7 +126,7 @@ def scrub_csv(dir_dirty, infile_name, dir_clean):
 
         # Process the header
         header = next(reader)
-        scrubbed_header = scrub_header(header)
+        scrubbed_header = scrub_headers(header)
         if scrubbed_header != header:
             header_errors = True
         writer.writerow(scrubbed_header)
@@ -87,7 +141,7 @@ def scrub_csv(dir_dirty, infile_name, dir_clean):
     if header_errors:
         print("\tHEADER ERRORS FOUND AND CORRECTED.")
 
-    print('\tNew file located at "{}\\{}"\n'.format(dir_clean, outfile_name))
+    print('\tNew file located at "{}\\{}"\n'.format(dir_clean, outfile_path))
 
 
 def scrub_file(dir_dirty, filename, dir_clean):
@@ -105,10 +159,8 @@ def scrub_file(dir_dirty, filename, dir_clean):
         scrub_method = TARGET_EXTENSIONS[ext]
         if scrub_method == 'csv':
             scrub_csv(dir_dirty, filename, dir_clean)
-        # if scrub_method == 'xls':
-        #     scrub_xls(dir_dirty, filename, dir_clean)
-        # if scrub_method == 'xlsx':
-        #     scrub_xlsx(dir_dirty, filename, dir_clean)
+        if scrub_method == 'xlsx':
+            scrub_xlsx(dir_dirty, filename, dir_clean)
     elif filename != '_empty':  # Don't give warnings for the filler file
         print(r'WARNING: DID NOT SCRUB "{}\{}"!'.format(dir_dirty, filename))
         print('\tREASON: FILE TYPE NOT SUPPORTED\n')
@@ -131,7 +183,9 @@ def scrub_directory(dir_dirty, dir_clean):
 
 
 def main(argv):
-    """ Process a command line arguments and begin scrubbing data files if appropriate """
+    """
+    Process a command line arguments and begin scrubbing data files if appropriate
+    """
     dir_dirty = DEFAULT_DIRTY
     dir_clean = DEFAULT_CLEAN
 
