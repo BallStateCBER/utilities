@@ -56,7 +56,7 @@ def backup_file(dir_path, file_name):
 
     backup_dir_path = '{}\\{}'.format(dir_path, BACKUP_FLDR)
     date = datetime.datetime.today().strftime('%Y-%m-%d')
-    backup_name = '{}_{}.{}'.format(file_name.split('.')[0], date, file_name.split('.')[1])
+    backup_name = '{}__{}.{}'.format(file_name.split('.')[0], date, file_name.split('.')[1])
     original_file_path = '{}\\{}'.format(dir_path, file_name)
     backup_file_path = '{}\\{}'.format(backup_dir_path, backup_name)
 
