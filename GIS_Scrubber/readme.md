@@ -8,6 +8,7 @@ It also likes to crash if these conventions aren't followed, which is annoying.
 ### Supported file types:
 - csv-like files (`.csv`, `.tsv`, `.txt`)
 - newer Excel files (`.xlsx`)
+  - **_warning_**: due to the renaming of worksheets, sheet references in formulas may break.
 
 ### Requirements:
 - python

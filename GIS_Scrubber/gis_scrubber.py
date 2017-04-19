@@ -37,6 +37,7 @@ def scrub_string(dirty_str):
 
     clean_str = str(dirty_str)
 
+    # maintain formulas (may still break due to tab renaming).
     if len(clean_str) > 0 and clean_str[0] is '=':
         return clean_str
 
