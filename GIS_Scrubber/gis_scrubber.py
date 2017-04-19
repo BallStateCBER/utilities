@@ -31,14 +31,27 @@ def scrub_string(dirty_str):
     """
     Given a string, clean it up to match GIS conventions
     """
+
+    if dirty_str is None:
+        return None
+
+    clean_str = str(dirty_str)
+
+    if len(clean_str) > 0 and clean_str[0] is '=':
+        return clean_str
+
     # no special characters
-    clean_str = re.sub(r'[^a-zA-Z0-9_]', '_', dirty_str)
+    clean_str = re.sub(r'[^a-zA-Z0-9_]', '_', clean_str)
 
     # move leading numbers to the end
     matches = re.match(r'[\d_]+', clean_str)
     if matches is not None:
         leading_nums = matches.group()
         clean_str = clean_str[len(leading_nums):] + '_' + leading_nums
+
+    # If the leading character is _still_ a number, add a filler character
+    if len(clean_str) > 0 and clean_str[0] in "0123456789_":
+        clean_str = "N" + clean_str
 
     # remove double-underscores
     clean_str = re.sub(r'_+', '_', clean_str)
