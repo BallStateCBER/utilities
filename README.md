@@ -15,7 +15,7 @@ If you don't already have a Python installation,
 
 If you're not sure whether your PC has Python installed, two good places to check are:
 - `C:\Python*`
-- `%userprofile\Python*`
+- `%userprofile%\Python*`
 
 If either of these locations exists (and has a `python.exe` file inside), you're probably already set.
 
