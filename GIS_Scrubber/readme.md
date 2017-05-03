@@ -20,6 +20,10 @@ It also likes to crash if these conventions aren't followed, which is annoying.
 - Place the files to be scrubbed into the "dirty" directory.
 - Run scrub_dirty_data.bat
 
+**Make sure to remove any blank rows at the top of your data!**
+(These will break GIS on import, but the tool doesn't notice these errors.)
+
+
 ### Advanced Usage:
 `python gis_scrubber.py -d <dirty-directory> -c <clean-directory>`
 (for custom input/output locations)
