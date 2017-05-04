@@ -50,9 +50,8 @@ def already_backed_up(dir_path, file_name):
     return file_length in backup_lengths
 
 
-def backup_file(dir_path, file_name):
+def backup_file(dir_path, file_name, preview):
     """ create a backup of the given file """
-    print("{}\\{}".format(dir_path, file_name))
 
     backup_dir_path = '{}\\{}'.format(dir_path, BACKUP_FLDR)
     date = datetime.datetime.today().strftime('%Y-%m-%d')
@@ -60,45 +59,60 @@ def backup_file(dir_path, file_name):
     original_file_path = '{}\\{}'.format(dir_path, file_name)
     backup_file_path = '{}\\{}'.format(backup_dir_path, backup_name)
 
-    # Actually make the backups
-    if not os.path.exists(backup_dir_path):
-        os.mkdir(backup_dir_path)
-    shutil.copy(original_file_path, backup_file_path)
+    if not preview:
+        print("Backing up: {}\\{}".format(dir_path, file_name))
+        # Actually make the backups
+        if not os.path.exists(backup_dir_path):
+            os.mkdir(backup_dir_path)
+        shutil.copy(original_file_path, backup_file_path)
+    else:
+        print("Candidate:  {}\\{}".format(dir_path, file_name))
 
 
-def backup_all(directory):
+def backup_all(directory, preview):
     """ crawl all subfolders of a given directory, making backups where appropriate """
     for (dir_path, nested_dirs, files) in os.walk(directory):
         for file_name in files:
             if is_backup_target(dir_path, file_name) and not already_backed_up(dir_path, file_name):
-                backup_file(dir_path, file_name)
+                backup_file(dir_path, file_name, preview)
 
 
 def main(argv):
     """ Process a command line argument, and run a backup if appropriate """
     dir_path = ''
+    preview = False
     try:
-        opts, args = getopt.getopt(argv, "hd:", ["directory="])
+        opts, args = getopt.getopt(argv, "hd:", ["directory=", "preview"])
     except getopt.GetoptError:
-        print('python BackupDrafts.py -p <directory_path>')
+        print('python BackupDrafts.py -d <directory> [-p]')
         sys.exit(2)
     for opt, arg in opts:
         if opt == '-h':
-            print('USAGE: python BackupDrafts.py -p <directory_path>')
+            print('USAGE: python BackupDrafts.py -d <directory> [-p]')
             print('-------------------------------------------------------------------------------')
             print('recursively crawl a given directory')
             print('back up any documents containing the following keywords in their file name:')
             print('\t{}'.format(BACKUP_KEYWORDS))
+            print('PARAMETERS:')
+            print('\t-d|--directory: the root directory to recursively call for backups')
+            print('\t-p|--preview:   scan directories without making backups')
+            print('\t-h:             display this help page')
+            print('')
             sys.exit()
         elif opt in ("-d", "--directory"):
             dir_path = arg
+        elif opt in ('-p', '--preview'):
+            preview = True
         else:
             print('bad arguments passed. Use "python BackupDrafts.py -h" for help.')
             sys.exit()
 
     if os.path.isdir(dir_path):
-        print('backing up files in "{}" '.format(dir_path))
-        backup_all(dir_path)
+        if not preview:
+            print('backing up files in: "{}"'.format(dir_path))
+        else:
+            print('previewing files in: "{}"'.format(dir_path))
+        backup_all(dir_path, preview)
     else:
         print('Bad directory path: no backup performed')
         sys.exit(2)
