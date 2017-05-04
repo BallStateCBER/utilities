@@ -12,18 +12,13 @@ Brandon Patterson
 
 ## USAGE:
 - In a command prompt
-- type `python BackupDrafts.py -p <directory_path>` and executes
+- type `python BackupDrafts.py -p <directory_path> [-p]` and execute
+  - (`-p` is a "preview" option that doesn't actually make backups)
 
 #### (OR)
 - Make sure  `Run_Backup.bat` is in the same directory as `BackupDrafts.py`
 - (if this is the first time running backups, ensure the proper locations are being backed up)
 - Run the batch script
-
-
-## TASK SCHEDULING:
-To automatically run this script periodically:
-- Open the Windows Task Scheduler,
-- schedule the `run_backup.bat` file run as often as you desire. (weekly or bi-weekly is suggested)
 
 ## CHANGING SCRIPT BEHAVIOR:
 - Open `BackupDrafts.py` for editing.
@@ -34,8 +29,12 @@ To automatically run this script periodically:
 
 ## ADD/ALTER BACKUP LOCATIONS:
 To back up different/additional locations:
-- Open `run_backup.bat` with a text editor (DON'T run it, but edit!)
-- Find the group of lines that read `set backup_location=...`, `echo backing up files...`, and `python BackupDrafts.py...`
-- This code sets the backup location, notifies that a backup is happenning, and then executes it
-- Edit/duplicate these lines to backup different/more locations.
-(You can call the script multiple times on different locations if you wiSh to back up several folders)
+- Open `Backup_Locations.txt` with a text editor
+- Add one folder path per line (all of these locations will be backed up individually)
+  - (Note that the script will crawl subfolders, so there is no need to specify nested folders.)
+
+## TASK SCHEDULING:
+  To automatically run this script periodically:
+  - Open the Windows Task Scheduler,
+  - Schedule the `run_backup.bat` file run as often as you desire. (weekly or bi-weekly is suggested)
+    - Make sure the run the script from the same folder (so that `Backup_Locations.txt` will be properly detected).
