@@ -1,5 +1,14 @@
 @echo off
 
+REM ######################################
+REM THIS FILE SHOULD NOT NEED MODIFICATION
+REM     TO ALTER BACKED-UP LOCATIONS,
+REM      EDIT "BACKUP_LOCATIONS.TXT"
+REM ######################################
+
+
+
+
 REM #############################
 REM Setup the log output location
 REM #############################
@@ -22,17 +31,10 @@ REM run the script, and redirect its output to a log location
 REM #########################################################
 
 
-REM Duplicate the below block of code (without the "REM"s) for each location you wish to back up.
-REM (Nested folders are backed up automatically, so you only need to 
-
-REM set backup_location="some\folder\you\wish\to\backup"
-REM echo backing up files in %backup_location%
-REM python BackupDrafts.py -d %backup_location% >> %log_path%
-
-
-set backup_location="%userprofile%\Box Sync\CBER Box\CBER Box - Research"
-echo backing up files in %backup_location%
-python BackupDrafts.py -d %backup_location% >> %log_path%
+for /F "tokens=*" %%D in (Backup_Locations.txt) do (
+echo backing up files in "%%D"
+python BackupDrafts.py -d "%%D" >> %log_path%
+)
 
 
 
